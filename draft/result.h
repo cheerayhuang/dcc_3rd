@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <list>
 #include <iostream>
-#include <mutex>
+//#include <mutex>
 #include <vector>
 
 template <typename T>
@@ -40,7 +40,7 @@ private:
     ResList res_list_;
     typename Result<T>::ResList::iterator min_iter_ = res_list_.begin();
     
-    std::mutex insert_data_mutex_;
+    //std::mutex insert_data_mutex_;
 
 public:
 
@@ -62,7 +62,7 @@ public:
 
         res_list_.push_front(std::move(data));
 
-        std::scoped_lock lk{insert_data_mutex_};
+        //std::scoped_lock lk{insert_data_mutex_};
         if (len_ == kMaxNumOfResultData) {
             res_list_.erase(min_iter_); 
         } else {

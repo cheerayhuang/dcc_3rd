@@ -1,10 +1,10 @@
 #ifndef _SEARCHBEST_
 #define _SEARCHBEST_
 
-#include <assert.h>
+//#include <assert.h>
 #include <cmath>
 #include <float.h>
-#include <climits>
+//#include <climits>
 // use openblas
 #include <cblas.h>
 #include "cosine_similarity.h"
@@ -18,20 +18,20 @@
 template <typename RE_T, typename T>
 AllResults<RE_T> SearchBest(const T* __restrict__ const pVecA,  // 待搜索的单个特征向量首地址
         const size_t seed_num, 
-        const int lenA,  // 待搜索特征向量长度(1 x 单个特征维数)
+        const int feat_size,  // 待搜索特征向量长度(1 x 单个特征维数)
 
         const T* __restrict__ const pVecDB, // 底库首地址
-        const int lenDB) // 底库长度(特征个数 x 单个特征维数)
+        const int face_num) // 底库长度(特征个数 x 单个特征维数)
 {
-    assert(lenDB%lenA == 0);
-    const int featsize = lenA;
-    const int facenum  = lenDB / lenA;
+    //assert(lenDB%lenA == 0);
+    //const int featsize = lenA;
+    //const int facenum  = lenDB / lenA;
 
     AllResults<RE_T> all_res(seed_num, nullptr);
 
-    int best_index = - INT_MAX;
+    //int best_index = - INT_MAX;
     using MetaDataType = typename Result<RE_T>::MetaDataType;
-    MetaDataType best_similarity = 0;
+    //MetaDataType best_similarity = 0;
     //unsigned int best_similarity = 0;
 #if 1 
     // Step 5, 加上OpenMP
@@ -41,9 +41,9 @@ AllResults<RE_T> SearchBest(const T* __restrict__ const pVecA,  // 待搜索的�
 #pragma omp parallel for
     for (auto i = 0; i < seed_num; ++i) {
         all_res[i] = new Result<RE_T>();
-        for(unsigned j = 0; j < facenum; ++j) {
+        for(unsigned j = 0; j < face_num; ++j) {
             // 普通C++代码实现的余弦相似度计算
-            MetaDataType similarity = Cosine_similarity<MetaDataType>(pVecA+i*featsize, pVecDB + j*featsize, featsize);
+            MetaDataType similarity = Cosine_similarity<MetaDataType>(pVecA+i*feat_size, pVecDB + j*feat_size, feat_size);
             //T similarity = Cosine_similarity_avx(pVecA+i*featsize, pVecDB + j*featsize, featsize);
             //std::cout << "similarity:" << similarity << std::endl;
             // 使用向量化代码实现的余弦相似度计算

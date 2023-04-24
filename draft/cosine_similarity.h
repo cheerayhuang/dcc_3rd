@@ -1,9 +1,9 @@
 #ifndef _COSINE_SIMILARITY_
 #define _COSINE_SIMILARITY_
 
-#include <cmath>
-#include <float.h>
-#include <immintrin.h>
+//#include <cmath>
+//#include <float.h>
+//#include <immintrin.h>
 
 template <typename RE_T,  typename T>
 RE_T Cosine_similarity(const T* __restrict__ const vectorA, // 第一个特征向量的首地址
@@ -34,6 +34,8 @@ RE_T Cosine_similarity(const T* __restrict__ const vectorA, // 第一个特征�
     //return similarity;
     return mult_add;
 }
+
+#if 0
 
 // Step 7, SIMD
 float inline reduceM128(const __m128 r)
@@ -100,6 +102,7 @@ Cosine_similarity_avx(const float* const vectorA, const float* const vectorB, co
 
     return similarity;
 }
+#endif
 
 #endif // !_COSINE_SIMILARITY_
 

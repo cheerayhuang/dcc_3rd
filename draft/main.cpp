@@ -3,18 +3,17 @@
 #include <fstream>
 #include <malloc.h>
 
-#include <iterator>
+//#include <iterator>
 #include <algorithm>
 #include <limits>
 #include <string>
-
 
 #include "timer.h"
 #include "search_best.h"
 
 #define ALGIN               (32) // 使用SIMD需要内存对齐，128bit的指令需要16位对齐，256bit的指令需要32位对齐
 #define FACENUM      (1000*1000) // 底库中存有100万张人脸特征向量
-#define SEEDNUM      (1)
+#define SEEDNUM      (1000)
 //#define FEATSIZE           (512) // 每个人脸特征向量的维度是512维，每一维是一个DType类型的浮点数
 //Step 11，用PCA做特征选择，压缩512维到256维
 #define FEATSIZE             (256) // 每个人脸特征向量的维度是256维，每一维是一个DType类型的浮点数
@@ -62,7 +61,7 @@ int main(int argc, char* argv[])
         for(int j = 0; j < FEATSIZE; ++j) { 
             //vectorA[i] = static_cast<DType>(FACENUM/2*FEATSIZE + i) / (FACENUM * FEATSIZE);
             fin >> vectorA[i*FEATSIZE + j];
-            if (i < FEATSIZE-1) {
+            if (j < FEATSIZE-1) {
                 fin >> delimiter;
             }
         }
@@ -81,6 +80,10 @@ int main(int argc, char* argv[])
             vectorA[i*FEATSIZE+j] /= norm;
             vectorA_norml[i*FEATSIZE+j] = static_cast<unsigned short>(
                 std::numeric_limits<unsigned short>::max() * (vectorA[i*FEATSIZE+j] + 1.0f/(65535.0f*2.0f))); 
+
+            /*
+                std::cout << "ori float: " << vectorA[i*FEATSIZE+j] << ", unsigned: " 
+                  << vectorA_norml[i*FEATSIZE+j] << std::endl;*/
         }
     }
 
@@ -123,6 +126,12 @@ int main(int argc, char* argv[])
             vectorB[j] /= norm;
             pDB[i*FEATSIZE+j] = static_cast<unsigned short>(
                 std::numeric_limits<unsigned short>::max()*(vectorB[j]+1.0f/(65535.0f*2.0f)));
+            /*
+
+            if (i > 255) {
+                std::cout << "ori float: " << vectorB[j] << ", unsigned: " 
+                    << pDB[i*FEATSIZE+j] << std::endl;
+            }*/
         }
     }
     fin.close();
@@ -132,7 +141,7 @@ int main(int argc, char* argv[])
 
     //int best_index = SearchBest(static_cast<DType*>(vectorA), FEATSIZE, pDB, FACENUM*FEATSIZE);
     //int best_index = SearchBest(static_cast<unsigned short*>(vectorA_norml), FEATSIZE, pDB, FACENUM*FEATSIZE);
-    auto all_res = SearchBest<ResultData<unsigned long>>(static_cast<unsigned short*>(vectorA_norml), SEEDNUM, FEATSIZE, pDB, FACENUM*FEATSIZE);
+    auto all_res = SearchBest<ResultData<unsigned>>(static_cast<unsigned short*>(vectorA_norml), SEEDNUM, FEATSIZE, pDB, FACENUM);
     //auto all_res = SearchBest(static_cast<DType*>(vectorA), SEEDNUM, FEATSIZE, pDB, FACENUM*FEATSIZE);
 
     // 4.打印结果
