@@ -1,0 +1,82 @@
+#pragma once
+
+#include <iostream> 
+#include <chrono>
+
+#include <thread>
+#include <iomanip>
+
+#include <sstream>
+
+using namespace std::literals::chrono_literals;
+
+class Timer {
+
+public:
+    Timer() = default;
+    
+    Timer(const Timer&) = delete;
+    Timer(Timer&&) = delete;
+    
+    Timer& operator=(const Timer&) = delete;
+    Timer& operator=(Timer&&) = delete;
+
+    ~Timer() = default;
+
+public:
+    using TimePoint = std::chrono::time_point<std::chrono::high_resolution_clock>;
+
+    void start() {
+        beg_point_ = clock_.now();
+    }
+
+    Timer& stop() {
+        end_point_ = clock_.now();
+
+        return *this;
+    }
+
+    unsigned long long AsNanoseconds() {
+        return std::chrono::duration_cast<std::chrono::nanoseconds>(end_point_-beg_point_).count();  
+    }
+
+    double AsSeconds() {
+        return static_cast<double>(AsNanoseconds()) / static_cast<double>(std::giga::num);
+    }
+
+    double AsMiliseconds() {
+        return static_cast<double>(AsNanoseconds()) / static_cast<double>(std::mega::num);
+    }
+
+    double AsMicroseconds() {
+        return static_cast<double>(AsNanoseconds()) / static_cast<double>(std::kilo::num);
+    }
+
+    static TimePoint Now() {
+        return std::chrono::high_resolution_clock().now();
+    }
+    
+    static long long NowAsNanoseconds() {
+        return std::chrono::duration_cast<std::chrono::nanoseconds>(
+                std::chrono::high_resolution_clock().now().time_since_epoch()).count();
+    }
+
+    friend std::ostream& operator<<(std::ostream& cout, Timer& t);
+
+private:
+
+    std::chrono::high_resolution_clock clock_;
+    TimePoint beg_point_;
+    TimePoint end_point_;
+
+};
+
+std::ostream& operator<<(std::ostream& cout, Timer& t) {
+    auto ori_flags = cout.flags();
+    cout << std::fixed << std::setprecision(9);
+    cout << "elapsed: " << t.AsNanoseconds() << " nano, " << t.AsMicroseconds() << " us, "
+        << t.AsMiliseconds() << " ms, " <<  t.AsSeconds() << " s.";
+    cout.flags(ori_flags);
+
+    return cout;
+}
