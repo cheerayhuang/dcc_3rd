@@ -2,3 +2,5 @@
 *.csv
 *.tar.gz
 *.log
+*.bk*
+*.bak
