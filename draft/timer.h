@@ -1,59 +1,94 @@
-/*********************************************************
- * C++11 chrono库封装的一个高精度计时器类（使用真实世界挂钟时间，具体时间依赖于系统）
- * 使用方式：
- * Timer t; // 开始计时
- * func();  // 运行待计时的函数
- * std::cout << t.elapsed() << std::endl; // 打印计时时间，默认毫秒为单位
- * std::cout << t.elapsed_micro() << std::endl; // 微秒
- * std::cout << t.elapsed_nano() << std::endl; // 纳秒
-*********************************************************/
-
-#ifndef _TIMER_
-#define _TIMER_
+#pragma once
 
 #include <chrono>
-using namespace std;
-using namespace std::chrono;
+#include <fstream>
+#include <iomanip>
+#include <iostream> 
+
+
+using namespace std::literals::chrono_literals;
 
 class Timer {
-    public:
-        Timer() : m_begin(high_resolution_clock::now()) {}
-        void reset() { m_begin = high_resolution_clock::now(); }
 
-        // 默认输出毫秒
-        template<typename Duration=milliseconds>
-        int64_t elapsed() const {
-            return duration_cast<Duration>(high_resolution_clock::now() - m_begin).count();
-        }
+public:
+    //Timer() = default;
+    Timer(size_t round=1): round_(round) {}
+    
+    Timer(const Timer&) = delete;
+    Timer(Timer&&) = delete;
+    
+    Timer& operator=(const Timer&) = delete;
+    Timer& operator=(Timer&&) = delete;
 
-        // 微秒
-        int64_t elapsed_micro() const {
-            return elapsed<microseconds>();
-        }
+    ~Timer(){
+        dura_log_.close();
+    }
 
-        // 纳秒
-        int64_t elapsed_nano() const {
-            return elapsed<nanoseconds>();
-        }
+public:
+    using TimePoint = std::chrono::time_point<std::chrono::high_resolution_clock>;
 
-        // 秒
-        int64_t elapsed_seconds() const {
-            return elapsed<seconds>();
-        }
+    void Start() {
+        dura_log_.open(kDurationLogPath, std::ios::out|std::ios::app);
+        beg_point_ = clock_.now();
+    }
 
-        // 分
-        int64_t elapsed_minutes() const {
-            return elapsed<minutes>();
-        }
+    Timer& Stop() {
+        end_point_ = clock_.now();
 
-        // 时
-        int64_t elapsed_hours() const {
-            return elapsed<hours>();
-        }
+        return *this;
+    }
 
-    private:
-        time_point<high_resolution_clock> m_begin;
+    unsigned long long AsNanoseconds() {
+        return std::chrono::duration_cast<std::chrono::nanoseconds>(end_point_-beg_point_).count();  
+    }
+
+    double AsSeconds() {
+        return static_cast<double>(AsNanoseconds()) / static_cast<double>(std::giga::num);
+    }
+
+    double AsMiliseconds() {
+        return static_cast<double>(AsNanoseconds()) / static_cast<double>(std::mega::num);
+    }
+
+    double AsMicroseconds() {
+        return static_cast<double>(AsNanoseconds()) / static_cast<double>(std::kilo::num);
+    }
+
+    void WriteDurationLog(){
+        dura_log_ << *this << "\n";
+    }
+
+    static TimePoint Now() {
+        return std::chrono::high_resolution_clock().now();
+    }
+    
+    static long long NowAsNanoseconds() {
+        return std::chrono::duration_cast<std::chrono::nanoseconds>(
+                std::chrono::high_resolution_clock().now().time_since_epoch()).count();
+    }
+    
+    friend std::ostream& operator<<(std::ostream& cout, Timer& t);
+
+private:
+
+    std::chrono::high_resolution_clock clock_;
+    TimePoint beg_point_;
+    TimePoint end_point_;
+
+    size_t round_;
+
+    std::ofstream dura_log_;
+
+    const std::string kDurationLogPath{"duration.log"};
 };
 
-#endif // !_TIMER_
+std::ostream& operator<<(std::ostream& cout, Timer& t) {
+    auto ori_flags = cout.flags();
+    cout << std::fixed << std::setprecision(3);
+    //cout << "elapsed: " << t.AsNanoseconds() << " nano, " << t.AsMicroseconds() << " us, "
+    //    << t.AsMiliseconds() << " ms, " <<  t.AsSeconds() << " s.";
+    cout << "round:" << t.round_ << ",duration:" << t.AsSeconds();
+    cout.flags(ori_flags);
 
+    return cout;
+}
