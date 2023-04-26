@@ -6,10 +6,10 @@
 //#include <immintrin.h>
 
 template <typename RE_T,  typename T>
-RE_T Cosine_similarity(const T* __restrict__ const vectorA, // 第一个特征向量的首地址
+RE_T CosineSimilarity(const T* __restrict__ const vectorA, // 第一个特征向量的首地址
                     const T* __restrict__ const vectorB, // 第二个特征向量的首地址
-                    const int len) // 特征向量长度(维数)
-{
+                    const int len){  // 特征向量长度(维数)
+
     RE_T mult_add = 0;
     //unsigned int mult_add = 0;
     // Step 10，有了模归一化后，不必计算a_norm2和b_norm2

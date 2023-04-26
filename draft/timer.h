@@ -28,7 +28,9 @@ public:
     using TimePoint = std::chrono::time_point<std::chrono::high_resolution_clock>;
 
     void Start() {
-        dura_log_.open(kDurationLogPath, std::ios::out|std::ios::app);
+        if (!dura_log_.is_open()) {
+            dura_log_.open(kDurationLogPath, std::ios::out|std::ios::app);
+        }
         beg_point_ = clock_.now();
     }
 
@@ -68,6 +70,7 @@ public:
     }
     
     friend std::ostream& operator<<(std::ostream& cout, Timer& t);
+    friend std::ofstream& operator<<(std::ofstream& fout, Timer& t);
 
 private:
 
@@ -84,11 +87,23 @@ private:
 
 std::ostream& operator<<(std::ostream& cout, Timer& t) {
     auto ori_flags = cout.flags();
-    cout << std::fixed << std::setprecision(3);
-    //cout << "elapsed: " << t.AsNanoseconds() << " nano, " << t.AsMicroseconds() << " us, "
-    //    << t.AsMiliseconds() << " ms, " <<  t.AsSeconds() << " s.";
-    cout << "round:" << t.round_ << ",duration:" << t.AsSeconds();
+    cout << std::fixed << std::setprecision(4);
+
+    cout << "elapsed: " << t.AsNanoseconds() << " nano, " 
+        << t.AsMicroseconds() << " us, "
+        << t.AsMiliseconds() << " ms, " 
+        <<  t.AsSeconds() << " s.";
+
     cout.flags(ori_flags);
 
     return cout;
+}
+
+std::ofstream& operator<<(std::ofstream& fout, Timer& t) {
+    auto ori_flags = fout.flags();
+    fout << std::fixed << std::setprecision(3);
+    fout << "round:" << t.round_ << ",duration:" << t.AsSeconds();
+    fout.flags(ori_flags);
+
+    return fout;
 }

@@ -1,10 +1,10 @@
 //main.cpp
-#include <iostream>
+#include <algorithm>
 #include <fstream>
+#include <iostream>
 #include <malloc.h>
 
 //#include <iterator>
-#include <algorithm>
 #include <limits>
 #include <string>
 
@@ -46,18 +46,24 @@ int main(int argc, char* argv[])
     __attribute__((aligned(ALGIN))) unsigned short vectorA_norml[SEEDNUM*FEATSIZE];
 
 
-    /*
-       cout << sizeof(unsigned short) << endl;
-       cout << std::numeric_limits<unsigned int>::max() << endl;
-       cout << std::numeric_limits<unsigned long>::max() << endl;
+   /* 
+    std::cout << sizeof(unsigned short) << std::endl;
+    std::cout << sizeof(unsigned int) << std::endl;
+    std::cout << sizeof(unsigned long) << std::endl;
+    std::cout << std::numeric_limits<unsigned int>::max() << std::endl;
+    std::cout << std::numeric_limits<unsigned long>::max() << std::endl;
 
        return 0;
-       */
+    */
 
+    AllResults<ResultData<unsigned>> all_res(SEEDNUM, nullptr);
 
-    auto fin = ifstream(kSeedFilePath); 
+    auto fin = std::ifstream(kSeedFilePath); 
     char delimiter;
-    for(auto i = 0; i < SEEDNUM; ++i)
+    size_t line_no;
+    for(auto i = 0; i < SEEDNUM; ++i) {
+        // fin >> line_no >> delimiter;
+        all_res[i] = new Result<ResultData<unsigned>>();
         for(int j = 0; j < FEATSIZE; ++j) { 
             //vectorA[i] = static_cast<DType>(FACENUM/2*FEATSIZE + i) / (FACENUM * FEATSIZE);
             fin >> vectorA[i*FEATSIZE + j];
@@ -65,6 +71,7 @@ int main(int argc, char* argv[])
                 fin >> delimiter;
             }
         }
+    }
     fin.close();
 
     /*
@@ -90,6 +97,7 @@ int main(int argc, char* argv[])
     // 2.定义底库中所有脸的特征向量，并初始化
     // 为了使用SIMD优化，使用memalign申请对齐了的内存，牺牲了代码的可移植性
     //DType* pDB = reinterpret_cast<DType*>(memalign(ALGIN, sizeof(DType)*FACENUM*FEATSIZE));
+    //unsigned short* pDB = reinterpret_cast<unsigned short*>(je_memalign(ALGIN, sizeof(unsigned short)*FACENUM*FEATSIZE));
     unsigned short* pDB = reinterpret_cast<unsigned short*>(memalign(ALGIN, sizeof(unsigned short)*FACENUM*FEATSIZE));
     if(!pDB) {
         std::cout << "out of memory\n";
@@ -103,6 +111,7 @@ int main(int argc, char* argv[])
     //cout << ((vectorA-pDB) % 32) << endl;
     fin.open(kDictFilePath);
     for(int i = 0; i < FACENUM; i++) {
+        // fin >> line_no >> delimiter;
         for(int j = 0; j < FEATSIZE; j++) {
             //pDB[i*FEATSIZE+j] = static_cast<DType>(i*FEATSIZE + j) / (FACENUM * FEATSIZE);
             fin >> vectorB[j];
@@ -137,17 +146,26 @@ int main(int argc, char* argv[])
     fin.close();
 
     // 3.定义计数器并开始计时
-    Timer t;
+    Timer t(std::stoi(argv[1]));
+    t.Start();
 
     //int best_index = SearchBest(static_cast<DType*>(vectorA), FEATSIZE, pDB, FACENUM*FEATSIZE);
     //int best_index = SearchBest(static_cast<unsigned short*>(vectorA_norml), FEATSIZE, pDB, FACENUM*FEATSIZE);
-    auto all_res = SearchBest<ResultData<unsigned>>(static_cast<unsigned short*>(vectorA_norml), SEEDNUM, FEATSIZE, pDB, FACENUM);
+    SearchBest(static_cast<unsigned short*>(vectorA_norml), SEEDNUM, FEATSIZE, pDB, FACENUM, all_res);
     //auto all_res = SearchBest(static_cast<DType*>(vectorA), SEEDNUM, FEATSIZE, pDB, FACENUM*FEATSIZE);
 
     // 4.打印结果
     //std::cout << "Best face index is: " << best_index << std::endl;
-    std::cout << "Find the best face index eat: " << t.elapsed_micro() << "us" << std::endl;
-    std::cout << "PER Cosine_similarity call eat: " << t.elapsed_nano() / FACENUM << "ns" << std::endl;
+    t.Stop().WriteDurationLog();
+
+    /*
+    std::cout << "Find the best face index eat: " << t.AsMicroseconds() << "us" << std::endl;
+
+    std::cout << "PER Cosine_similarity call eat: "
+        << t.AsNanoseconds() / (FACENUM*1.0) << "ns" << std::endl;
+    */
+
+    std::cout << t << std::endl;
 
     ResultWriter().Write(all_res);
     //printf("double[%d], float[%d], short[%d], int[%d].\n", (int)sizeof(double), (int)sizeof(float), (int)sizeof(short), (int)sizeof(int));
@@ -155,6 +173,10 @@ int main(int argc, char* argv[])
     // 5.释放分配的内存，防止内存泄露
     // memalign分配的内存也可以用free释放
     free(pDB);
+
+    for(auto && p : all_res) {
+        delete(p);
+    }
 
     return 0;
 }

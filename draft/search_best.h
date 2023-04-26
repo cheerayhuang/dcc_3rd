@@ -6,28 +6,28 @@
 #include <float.h>
 //#include <climits>
 // use openblas
-#include <cblas.h>
-#include "cosine_similarity.h"
+//#include <cblas.h>
 #include <iostream>
 
+//#include <jemalloc/jemalloc.h>
+
+#include "cosine_similarity.h"
 #include "result_writer.h"
 
 // Step 1, g++ main.cpp search_best.cpp cosine_similarity.cpp -std=c++11
 // Step 2, g++ main.cpp search_best.cpp cosine_similarity.cpp -std=c++11 -O3
 // Step 3, g++ main.cpp search_best.cpp cosine_similarity.cpp -std=c++11 -O3 -Ofast -ffast-math
 template <typename RE_T, typename T>
-AllResults<RE_T> SearchBest(const T* __restrict__ const pVecA,  // 待搜索的单个特征向量首地址
+void SearchBest(const T* __restrict__ const pVecA,  // 待搜索的单个特征向量首地址
         const size_t seed_num, 
         const int feat_size,  // 待搜索特征向量长度(1 x 单个特征维数)
-
         const T* __restrict__ const pVecDB, // 底库首地址
-        const int face_num) // 底库长度(特征个数 x 单个特征维数)
+        const int face_num, 
+        AllResults<RE_T>& all_res) 
 {
     //assert(lenDB%lenA == 0);
     //const int featsize = lenA;
     //const int facenum  = lenDB / lenA;
-
-    AllResults<RE_T> all_res(seed_num, nullptr);
 
     //int best_index = - INT_MAX;
     using MetaDataType = typename Result<RE_T>::MetaDataType;
@@ -37,13 +37,13 @@ AllResults<RE_T> SearchBest(const T* __restrict__ const pVecA,  // 待搜索的�
     // Step 5, 加上OpenMP
     //GCC很聪明，OpenMP默认线程数就是多核处理器的核心数量，不必显示指定
     //OpenMP起线程，收回线程也是有开销的，所以要合理安排每个线程的任务量大小，不宜放入内层for循环（任务量太小划不来）
-    //#pragma omp parallel for num_threads(8)
-#pragma omp parallel for
+#pragma omp parallel for num_threads(8)
+//#pragma omp parallel for
     for (auto i = 0; i < seed_num; ++i) {
-        all_res[i] = new Result<RE_T>();
+        //all_res[i] = new Result<RE_T>();
         for(unsigned j = 0; j < face_num; ++j) {
             // 普通C++代码实现的余弦相似度计算
-            MetaDataType similarity = Cosine_similarity<MetaDataType>(pVecA+i*feat_size, pVecDB + j*feat_size, feat_size);
+            MetaDataType similarity = CosineSimilarity<MetaDataType>(pVecA+i*feat_size, pVecDB + j*feat_size, feat_size);
             //T similarity = Cosine_similarity_avx(pVecA+i*featsize, pVecDB + j*featsize, featsize);
             //std::cout << "similarity:" << similarity << std::endl;
             // 使用向量化代码实现的余弦相似度计算
@@ -87,7 +87,7 @@ AllResults<RE_T> SearchBest(const T* __restrict__ const pVecA,  // 待搜索的�
     }
 #endif
     //std::cout << "best index: " << best_index << std::endl;
-    return std::move(all_res);
+    //return std::move(all_res);
 }
 
 #endif //!_SEARCHBEST_

@@ -75,6 +75,17 @@ public:
     }
 
     using MetaDataType = typename T::DataType;
+
+    /*
+    MetaDataType GetCurrentMinValue() {
+        if (len_ == 0) {
+            return 0;
+        }
+
+        return min_iter_->data;
+    }*/
+
+
 };
 
 template <typename T>
