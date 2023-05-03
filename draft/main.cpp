@@ -46,7 +46,7 @@ int main(int argc, char* argv[])
     __attribute__((aligned(ALGIN))) unsigned short vectorA_norml[SEEDNUM*FEATSIZE];
 
 
-   /* 
+   /*
     std::cout << sizeof(unsigned short) << std::endl;
     std::cout << sizeof(unsigned int) << std::endl;
     std::cout << sizeof(unsigned long) << std::endl;
@@ -58,13 +58,13 @@ int main(int argc, char* argv[])
 
     AllResults<ResultData<unsigned>> all_res(SEEDNUM, nullptr);
 
-    auto fin = std::ifstream(kSeedFilePath); 
+    auto fin = std::ifstream(kSeedFilePath);
     char delimiter;
     size_t line_no;
     for(auto i = 0; i < SEEDNUM; ++i) {
         // fin >> line_no >> delimiter;
         all_res[i] = new Result<ResultData<unsigned>>();
-        for(int j = 0; j < FEATSIZE; ++j) { 
+        for(int j = 0; j < FEATSIZE; ++j) {
             //vectorA[i] = static_cast<DType>(FACENUM/2*FEATSIZE + i) / (FACENUM * FEATSIZE);
             fin >> vectorA[i*FEATSIZE + j];
             if (j < FEATSIZE-1) {
@@ -75,7 +75,7 @@ int main(int argc, char* argv[])
     fin.close();
 
     /*
-       std::ostream_iterator<DType> cout_iter(std::cout, ","); 
+       std::ostream_iterator<DType> cout_iter(std::cout, ",");
        std::copy(begin(vectorA), end(vectorA), cout_iter);
        std::cout << std::endl;
        */
@@ -86,10 +86,10 @@ int main(int argc, char* argv[])
         for(auto j = 0; j < FEATSIZE; ++j) {
             vectorA[i*FEATSIZE+j] /= norm;
             vectorA_norml[i*FEATSIZE+j] = static_cast<unsigned short>(
-                std::numeric_limits<unsigned short>::max() * (vectorA[i*FEATSIZE+j] + 1.0f/(65535.0f*2.0f))); 
+                std::numeric_limits<unsigned short>::max() * (vectorA[i*FEATSIZE+j] + 1.0f/(65535.0f*2.0f)));
 
             /*
-                std::cout << "ori float: " << vectorA[i*FEATSIZE+j] << ", unsigned: " 
+                std::cout << "ori float: " << vectorA[i*FEATSIZE+j] << ", unsigned: "
                   << vectorA_norml[i*FEATSIZE+j] << std::endl;*/
         }
     }
@@ -138,7 +138,7 @@ int main(int argc, char* argv[])
             /*
 
             if (i > 255) {
-                std::cout << "ori float: " << vectorB[j] << ", unsigned: " 
+                std::cout << "ori float: " << vectorB[j] << ", unsigned: "
                     << pDB[i*FEATSIZE+j] << std::endl;
             }*/
         }
