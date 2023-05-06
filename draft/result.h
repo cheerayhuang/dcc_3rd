@@ -9,7 +9,7 @@
 template <typename T>
 struct ResultData {
 
-    T data; 
+    T data;
     unsigned int index;
 
     using DataType = T;
@@ -39,7 +39,7 @@ private:
     size_t len_ = 0;
     ResList res_list_;
     typename Result<T>::ResList::iterator min_iter_ = res_list_.begin();
-    
+
     //std::mutex insert_data_mutex_;
 
 public:
@@ -64,11 +64,11 @@ public:
 
         //std::scoped_lock lk{insert_data_mutex_};
         if (len_ == kMaxNumOfResultData) {
-            res_list_.erase(min_iter_); 
+            res_list_.erase(min_iter_);
         } else {
             len_++;
         }
-        
+
         if (len_ > 1) {
             min_iter_ = std::min_element(res_list_.begin(), res_list_.end());
         }
