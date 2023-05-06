@@ -4,7 +4,7 @@
 #include <iostream>
 #include <malloc.h>
 
-//#include <iterator>
+#include <iterator>
 #include <limits>
 #include <string>
 
@@ -12,11 +12,9 @@
 #include "search_best.h"
 
 #define ALGIN               (16) // 使用SIMD需要内存对齐，128bit的指令需要16位对齐，256bit的指令需要32位对齐
-#define FACENUM      (1000*1000) // 底库中存有100万张人脸特征向量
+#define FACENUM      (1000*1000) // the total of dict vectors
 #define SEEDNUM      (1000)
-//#define FEATSIZE           (512) // 每个人脸特征向量的维度是512维，每一维是一个DType类型的浮点数
-//Step 11，用PCA做特征选择，压缩512维到256维
-#define FEATSIZE             (256) // 每个人脸特征向量的维度是256维，每一维是一个DType类型的浮点数
+#define FEATSIZE     (256)
 
 // Step 4, double-->float(在我的电脑上，sizeof(float)==4，sizeof(double)==8, sizeof(short)==2, sizeof(int)==4
 //typedef float DType;
@@ -42,7 +40,7 @@ float calcL(const DType * const pVec, const int len)
 }
 
 void NormalizeVec(float *v1, unsigned short *v2, float* v3, unsigned short *v4) {
-#pragma omp parallel for num_threads(4)
+#pragma omp parallel for num_threads(8)
     for(int i = 0; i < FACENUM; ++i) {
         float norm = calcL(v3+i*FEATSIZE, FEATSIZE);
         float norm_seed;
@@ -65,10 +63,43 @@ void NormalizeVec(float *v1, unsigned short *v2, float* v3, unsigned short *v4) 
     }
 }
 
+void NormalizeVec2(float *v1, unsigned short *v2, float* v3, unsigned short *v4) {
+#pragma omp parallel for num_threads(8)
+    for(int i = 0; i < FACENUM; ++i) {
+        unsigned long norm{0}, norm_seed{0};
+        for (auto j = 0; j < FEATSIZE; ++j) {
+            if (i < SEEDNUM) {
+                v2[i*FEATSIZE+j] = static_cast<unsigned short>(
+                    std::numeric_limits<unsigned short>::max() *
+                    (v1[i*FEATSIZE+j] + kConvertToShortDelta));
+
+                norm_seed += static_cast<unsigned long>(v2[i*FEATSIZE+j]) * v2[i*FEATSIZE+j];
+            }
+            v4[i*FEATSIZE+j] = static_cast<unsigned short>(
+                    std::numeric_limits<unsigned short>::max() *
+                    (v3[i*FEATSIZE+j] + kConvertToShortDelta));
+
+            norm += static_cast<unsigned long>(v4[i*FEATSIZE+j]) * v4[i*FEATSIZE+j];
+        }
+
+        for(auto j = 0; j < FEATSIZE; ++j) {
+            v4[i*FEATSIZE+j] = static_cast<unsigned short>(
+                std::numeric_limits<unsigned short>::max() *
+                (v4[i*FEATSIZE+j]/std::sqrt(norm)));
+
+            if (i < SEEDNUM) {
+                v2[i*FEATSIZE+j] = static_cast<unsigned short>(
+                    std::numeric_limits<unsigned short>::max() *
+                    (v2[i*FEATSIZE+j]/std::sqrt(norm_seed)));
+            }
+        }
+    }
+}
+
 int main(int argc, char* argv[])
 {
     __attribute__((aligned(ALGIN))) DType vectorA[SEEDNUM * FEATSIZE];
-    __attribute__((aligned(ALGIN))) unsigned short vectorA_norml[SEEDNUM*FEATSIZE];
+    __attribute__((aligned(ALGIN))) unsigned short vectorA_normal[SEEDNUM*FEATSIZE];
 
     if (argc == 1) {
         argv[1] = new char[2]{'1', '\0'};
@@ -102,10 +133,6 @@ int main(int argc, char* argv[])
     }
 
     DType* vectorB = static_cast<DType*>(memalign(ALGIN, sizeof(DType)*FACENUM*FEATSIZE));
-    // 验证内存是否对齐
-    //printf("vectorA[%p], pDB[%p].\n", vectorA, pDB);
-    //cout << (vectorA-pDB) << endl;
-    //cout << ((vectorA-pDB) % 32) << endl;
     fin.open(kDictFilePath);
     for(int i = 0; i < FACENUM; i++) {
         // fin >> line_no >> delimiter;
@@ -125,17 +152,25 @@ int main(int argc, char* argv[])
     Timer t_norm;
     t_norm.Start();
     t.Start();
-    NormalizeVec(vectorA, vectorA_norml, vectorB, pDB);
+    NormalizeVec(vectorA, vectorA_normal, vectorB, pDB);
+    //NormalizeVec2(vectorA, vectorA_normal, vectorB, pDB);
     t_norm.Stop();
+
+    /*
+    std::ostream_iterator<unsigned short> cout_iter(std::cout, ",");
+    std::copy(vectorA_normal, vectorA_normal+FEATSIZE, cout_iter);
+    std::cout << std::endl;
+    std::copy(pDB, pDB+FEATSIZE, cout_iter);
+    std::cout << std::endl;
+    */
+
 
     // 3.定义计数器并开始计时
 
     //Normalization();
 
-    //int best_index = SearchBest(static_cast<DType*>(vectorA), FEATSIZE, pDB, FACENUM*FEATSIZE);
-    //int best_index = SearchBest(static_cast<unsigned short*>(vectorA_norml), FEATSIZE, pDB, FACENUM*FEATSIZE);
-    //SearchBest(/*vectorA_norml*/ vectorA, SEEDNUM, FEATSIZE, pDB, FACENUM, all_res);
-    SearchBest(vectorA_norml, SEEDNUM, FEATSIZE, pDB, FACENUM, all_res);
+    //SearchBest(/*vectorA_normal*/ vectorA, SEEDNUM, FEATSIZE, pDB, FACENUM, all_res);
+    SearchBest(vectorA_normal, SEEDNUM, FEATSIZE, pDB, FACENUM, all_res);
 
 
     // 4.打印结果

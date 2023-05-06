@@ -37,7 +37,7 @@ void SearchBest(const T* __restrict__ const pVecA,  // 待搜索的单个特征�
     // Step 5, 加上OpenMP
     //GCC很聪明，OpenMP默认线程数就是多核处理器的核心数量，不必显示指定
     //OpenMP起线程，收回线程也是有开销的，所以要合理安排每个线程的任务量大小，不宜放入内层for循环（任务量太小划不来）
-#pragma omp parallel for num_threads(4)
+#pragma omp parallel for num_threads(8)
 //#pragma omp parallel for
     for (auto i = 0; i < seed_num; ++i) {
         //all_res[i] = new Result<RE_T>();
