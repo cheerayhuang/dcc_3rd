@@ -30,7 +30,7 @@ void SearchBest(const T* __restrict__ const pVecA,  // 待搜索的单个特征�
     //const int facenum  = lenDB / lenA;
 
     //int best_index = - INT_MAX;
-    using MetaDataType = typename Result<RE_T>::MetaDataType;
+    using MetaDataType = typename Top10Similarity<RE_T>::MetaDataType;
     //MetaDataType best_similarity = 0;
     //unsigned int best_similarity = 0;
 #if 1

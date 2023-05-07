@@ -11,7 +11,7 @@
 #include "timer.h"
 #include "search_best.h"
 
-#define ALGIN               (16) // 使用SIMD需要内存对齐，128bit的指令需要16位对齐，256bit的指令需要32位对齐
+#define ALGIN               (32) // 使用SIMD需要内存对齐，128bit的指令需要16位对齐，256bit的指令需要32位对齐
 #define FACENUM      (1000*1000) // the total of dict vectors
 #define SEEDNUM      (1000)
 #define FEATSIZE     (256)
@@ -114,7 +114,7 @@ int main(int argc, char* argv[])
     for(auto i = 0; i < SEEDNUM; ++i) {
         // fin >> line_no >> delimiter;
         //all_res[i] = new Result<ResultData<DType>>();
-        all_res[i] = new Result<ResultData<unsigned>>();
+        all_res[i] = new Top10Similarity<ResultData<unsigned>>();
         for(int j = 0; j < FEATSIZE; ++j) {
             fin >> vectorA[i*FEATSIZE + j];
             if (j < FEATSIZE-1) {
@@ -173,14 +173,12 @@ int main(int argc, char* argv[])
     SearchBest(vectorA_normal, SEEDNUM, FEATSIZE, pDB, FACENUM, all_res);
 
 
-    // 4.打印结果
     t.Stop().WriteDurationLog();
     ResultWriter().Write(all_res);
 
     std::cout << "normalization " << t_norm << std::endl;
     std::cout << t << std::endl;
-    // 5.释放分配的内存，防止内存泄露
-    // memalign分配的内存也可以用free释放
+
     free(pDB);
 
     for(auto && p : all_res) {
