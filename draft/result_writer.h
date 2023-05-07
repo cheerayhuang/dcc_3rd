@@ -18,7 +18,7 @@ private:
 
 
 public:
-    
+
     ResultWriter() = default;
     ~ResultWriter() {
         fout_.close();
@@ -38,11 +38,11 @@ public:
             auto rank = 0;
             const auto& res_list = all_res[i]->GetResult();
 
-            std::for_each(res_list.begin(), res_list.end(), 
+            std::for_each(res_list.begin(), res_list.end(),
                     [i, this, &rank](auto&& data) {
                         fout_ << i << "," << data.index << "," << data.data << "," << rank << "\n";
                         rank++;
-                    } 
+                    }
             );
         }
 
