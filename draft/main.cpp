@@ -16,6 +16,7 @@
 #define SEEDNUM      (1000)
 #define FEATSIZE     (256)
 
+
 // Step 4, double-->float(在我的电脑上，sizeof(float)==4，sizeof(double)==8, sizeof(short)==2, sizeof(int)==4
 //typedef float DType;
 // Step 12, float-->unsigned short，定点化
@@ -40,7 +41,7 @@ float calcL(const DType * const pVec, const int len)
 }
 
 void NormalizeVec(float *v1, unsigned short *v2, float* v3, unsigned short *v4) {
-#pragma omp parallel for num_threads(8)
+#pragma omp parallel for num_threads(THREAD_NUM)
     for(int i = 0; i < FACENUM; ++i) {
         float norm = calcL(v3+i*FEATSIZE, FEATSIZE);
         float norm_seed;
@@ -64,7 +65,7 @@ void NormalizeVec(float *v1, unsigned short *v2, float* v3, unsigned short *v4) 
 }
 
 void NormalizeVec2(float *v1, unsigned short *v2, float* v3, unsigned short *v4) {
-#pragma omp parallel for num_threads(8)
+#pragma omp parallel for num_threads(THREAD_NUM)
     for(int i = 0; i < FACENUM; ++i) {
         unsigned long norm{0}, norm_seed{0};
         for (auto j = 0; j < FEATSIZE; ++j) {
