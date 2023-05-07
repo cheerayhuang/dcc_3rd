@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <functional>
 #include <list>
 #include <iostream>
 //#include <mutex>
@@ -25,20 +26,25 @@ bool operator <(const ResultData<T> &op1, const ResultData<T> &op2) {
     return  op1.data < op2.data;
 }
 
+template <typename T>
+bool operator >(const ResultData<T> &op1, const ResultData<T> &op2) {
+    return  op1.data > op2.data;
+}
+
 using namespace std::rel_ops;
 
-template<typename T>
+template<typename T, unsigned TOP_K>
 class Result {
 
     using ResList = std::list<T>;
     enum {
-        kMaxNumOfResultData = 10
+        kMaxNumOfResultData = TOP_K
     };
 
 private:
     size_t len_ = 0;
     ResList res_list_;
-    typename Result<T>::ResList::iterator min_iter_ = res_list_.begin();
+    typename ResList::iterator min_iter_ = res_list_.begin();
 
     //std::mutex insert_data_mutex_;
 
@@ -54,11 +60,11 @@ public:
         return len_;
     }
 
-    void InsertResData(T&& data) {
-        if (len_ == kMaxNumOfResultData && data < *min_iter_) {
+    template<typename CMP_TYPE=std::greater<T>>
+    void InsertResData(T&& data, CMP_TYPE cmp_op=CMP_TYPE()) {
+        if (len_ == kMaxNumOfResultData && cmp_op(*min_iter_, data)){
             return ;
         }
-
 
         res_list_.push_front(std::move(data));
 
@@ -75,19 +81,10 @@ public:
     }
 
     using MetaDataType = typename T::DataType;
-
-    /*
-    MetaDataType GetCurrentMinValue() {
-        if (len_ == 0) {
-            return 0;
-        }
-
-        return min_iter_->data;
-    }*/
-
-
 };
 
 template <typename T>
-using AllResults = std::vector<Result<T>*>;
+using Top10Similarity = Result<T, 10>;
 
+template <typename T>
+using AllResults = std::vector<Top10Similarity<T>*>;
