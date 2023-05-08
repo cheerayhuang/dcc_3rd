@@ -36,7 +36,8 @@ using namespace std::rel_ops;
 template<typename T, unsigned TOP_K>
 class Result {
 
-    using ResList = std::list<T>;
+    //using ResList = std::list<T>;
+    using ResList = std::vector<T>;
     enum {
         kMaxNumOfResultData = TOP_K
     };
@@ -44,7 +45,8 @@ class Result {
 private:
     size_t len_ = 0;
     ResList res_list_;
-    typename ResList::iterator min_iter_ = res_list_.begin();
+    //typename ResList::iterator min_iter_ = res_list_.begin();
+    typename T::DataType min_val_;
 
     //std::mutex insert_data_mutex_;
 
