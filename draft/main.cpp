@@ -11,7 +11,7 @@
 #include "timer.h"
 #include "search_best.h"
 
-#define ALGIN               (16) // 使用SIMD需要内存对齐，128bit的指令需要16位对齐，256bit的指令需要32位对齐
+#define ALGIN               (32) // 使用SIMD需要内存对齐，128bit的指令需要16位对齐，256bit的指令需要32位对齐
 #define FACENUM      (1000*1000) // the total of dict vectors
 #define SEEDNUM      (1000)
 #define FEATSIZE     (256)
@@ -37,7 +37,7 @@ float calcL(const DType * const pVec, const int len)
 }
 
 void NormalizeVec(float *v1, unsigned short *v2, float* v3, unsigned short *v4) {
-#pragma omp parallel for num_threads(8)
+#pragma omp parallel for num_threads(THREAD_NUM)
     for(int i = 0; i < FACENUM; ++i) {
         float norm = calcL(v3+i*FEATSIZE, FEATSIZE);
         float norm_seed;
@@ -61,7 +61,7 @@ void NormalizeVec(float *v1, unsigned short *v2, float* v3, unsigned short *v4) 
 }
 
 void NormalizeVec2(float *v1, unsigned short *v2, float* v3, unsigned short *v4) {
-#pragma omp parallel for num_threads(8)
+#pragma omp parallel for num_threads(THREAD_NUM)
     for(int i = 0; i < FACENUM; ++i) {
         unsigned long norm{0}, norm_seed{0};
         for (auto j = 0; j < FEATSIZE; ++j) {
@@ -111,7 +111,7 @@ int main(int argc, char* argv[])
     for(auto i = 0; i < SEEDNUM; ++i) {
         // fin >> line_no >> delimiter;
         //all_res[i] = new Result<ResultData<DType>>();
-        all_res[i] = new Result<ResultData<unsigned>>();
+        all_res[i] = new Top10Similarity<ResultData<unsigned>>();
         for(int j = 0; j < FEATSIZE; ++j) {
             fin >> vectorA[i*FEATSIZE + j];
             if (j < FEATSIZE-1) {
@@ -161,10 +161,7 @@ int main(int argc, char* argv[])
     std::cout << std::endl;
     */
 
-
-    //SearchBest(/*vectorA_norm*/ vectorA, SEEDNUM, FEATSIZE, pDB, FACENUM, all_res);
     SearchBest(vectorA_norm, SEEDNUM, FEATSIZE, pDB, FACENUM, all_res);
-
 
     t.Stop().WriteDurationLog();
     ResultWriter().Write(all_res);

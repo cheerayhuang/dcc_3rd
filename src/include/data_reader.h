@@ -9,7 +9,6 @@
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 
-spdlog::stdout_color_mt("DataReader");
 
 class DataReader {
 
@@ -17,7 +16,7 @@ public:
     DataReader(std::string dict_file="dict_vec.csv",
         std::string seed_file="seed_vec.csv")
         : dict_file_(dict_file), seed_file_(seed_file) {
-            logger_ = spdlog::get("DataReader");
+            logger_ = spdlog::stdout_color_mt("DataReader");
             logger_->set_level(spdlog::level::info);
         }
 
@@ -75,7 +74,8 @@ private:
                     fin_ >> delimiter;
                 }
             }
-            logger_->info("Finish reading dict file line {}.", i+1);
+            if (i % 100000 == 0)
+                logger_->info("Finish reading dict file line {}.", i+1);
         }
         fin_.close();
     }
@@ -92,7 +92,7 @@ private:
                     fin_ >> delimiter;
                 }
             }
-            logger_->info("Finish reading seed file line {}.", i+1);
+            //logger_->info("Finish reading seed file line {}.", i+1);
         }
         fin_.close();
     }

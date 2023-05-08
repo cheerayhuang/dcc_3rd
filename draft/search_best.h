@@ -14,6 +14,8 @@
 #include "cosine_similarity.h"
 #include "result_writer.h"
 
+#define THREAD_NUM (4)
+
 template <typename RE_T, typename T>
 void SearchBest(const T* __restrict__ const pVecA,  // 待搜索的单个特征向量首地址
         const size_t seed_num,
@@ -27,12 +29,11 @@ void SearchBest(const T* __restrict__ const pVecA,  // 待搜索的单个特征�
     //const int facenum  = lenDB / lenA;
 
     //int best_index = - INT_MAX;
-    using MetaDataType = typename Result<RE_T>::MetaDataType;
+    using MetaDataType = typename Top10Similarity<RE_T>::MetaDataType;
     //MetaDataType best_similarity = 0;
     //unsigned int best_similarity = 0;
 #if 1
-    // OpenMP
-#pragma omp parallel for num_threads(8)
+#pragma omp parallel for num_threads(THREAD_NUM)
 //#pragma omp parallel for
     for (auto i = 0; i < seed_num; ++i) {
         //all_res[i] = new Result<RE_T>();
