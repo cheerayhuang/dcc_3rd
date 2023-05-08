@@ -6,7 +6,7 @@
 
 #include "result.h"
 
-
+template<unsigned TOP_K=10>
 class ResultWriter {
 
 
@@ -38,7 +38,7 @@ public:
             auto rank = 0;
             const auto& res_list = all_res[i]->GetResult();
 
-            std::for_each(res_list.begin(), res_list.end(),
+            std::for_each(res_list.begin(), res_list.begin()+TOP_K,
                     [i, this, &rank](auto&& data) {
                         fout_ << i << "," << data.index << "," << data.data << "," << rank << "\n";
                         rank++;

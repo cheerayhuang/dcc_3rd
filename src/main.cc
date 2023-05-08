@@ -12,8 +12,10 @@ int main(int argc, char* argv[]) {
     auto seed_data = reader.GetSeedData();
     auto dict_data = reader.GetDictData();
 
+    /*
     std::cout << *(seed_data+236) << "," << *(seed_data+999*256+15) << std::endl;
     std::cout << *(dict_data+923666) << "," << *(dict_data+999999*256+15) << std::endl;
+    */
 
 
     Calc calc(seed_data, dict_data, std::stoi(argv[1]));

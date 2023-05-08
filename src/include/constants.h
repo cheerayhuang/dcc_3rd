@@ -7,7 +7,9 @@
 enum {
         kMatrixDimension = 256,
         kDictVecNum = 1000*1000,
+        //kDictVecNum = 1000,
         kSeedVecNum = 1000,
+        //kSeedVecNum = 1,
         kAlign32Bit = 32,
         kAlign16Bit = 16,
 

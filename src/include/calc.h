@@ -53,8 +53,12 @@ public:
     }
 
     void Run() {
+        Timer t_norm;
+        t_norm.Start();
         timer_->Start();
         _DataPreHandler();
+        std::cout << t_norm.Stop() << std::endl;
+
         _CalcSimilarity();
         timer_->Stop().WriteDurationLog();
 
@@ -99,8 +103,14 @@ private:
         for(unsigned i = 0; i < kSeedVecNum; ++i) {
             for(unsigned j = 0; j < kDictVecNum; ++j) {
                 auto similarity = _CalcCosSim(seed_data_int_+vec_index_[i], dict_data_int_+vec_index_[j]);
+
+                if (similarity < all_res_[i]->min_val) {
+                    continue;
+                }
+
                 all_res_[i]->InsertResData(ResultData<unsigned>{similarity, j});
             }
+            all_res_[i]->SortRes();
         }
     }
 
@@ -109,6 +119,7 @@ private:
 
         for(auto i = 0; i < kMatrixDimension; i++) {
             l += vec[i] * vec[i];
+            //l += std::pow(vec[i], 2);
         }
         return std::sqrt(l) + std::numeric_limits<float>::min();
     }
