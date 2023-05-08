@@ -16,9 +16,6 @@
 #define SEEDNUM      (1000)
 #define FEATSIZE     (256)
 
-// Step 4, double-->float(在我的电脑上，sizeof(float)==4，sizeof(double)==8, sizeof(short)==2, sizeof(int)==4
-//typedef float DType;
-// Step 12, float-->unsigned short，定点化
 typedef float DType;
 
 //const std::string kSeedFilePath = "/home/chee/work/dcc_3rd/test/seed_vec.csv";
@@ -99,7 +96,7 @@ void NormalizeVec2(float *v1, unsigned short *v2, float* v3, unsigned short *v4)
 int main(int argc, char* argv[])
 {
     __attribute__((aligned(ALGIN))) DType vectorA[SEEDNUM * FEATSIZE];
-    __attribute__((aligned(ALGIN))) unsigned short vectorA_normal[SEEDNUM*FEATSIZE];
+    __attribute__((aligned(ALGIN))) unsigned short vectorA_norm[SEEDNUM*FEATSIZE];
 
     if (argc == 1) {
         argv[1] = new char[2]{'1', '\0'};
@@ -152,36 +149,31 @@ int main(int argc, char* argv[])
     Timer t_norm;
     t_norm.Start();
     t.Start();
-    NormalizeVec(vectorA, vectorA_normal, vectorB, pDB);
-    //NormalizeVec2(vectorA, vectorA_normal, vectorB, pDB);
+    NormalizeVec(vectorA, vectorA_norm, vectorB, pDB);
+    //NormalizeVec2(vectorA, vectorA_norm, vectorB, pDB);
     t_norm.Stop();
 
     /*
     std::ostream_iterator<unsigned short> cout_iter(std::cout, ",");
-    std::copy(vectorA_normal, vectorA_normal+FEATSIZE, cout_iter);
+    std::copy(vectorA_norm, vectorA_norm+FEATSIZE, cout_iter);
     std::cout << std::endl;
     std::copy(pDB, pDB+FEATSIZE, cout_iter);
     std::cout << std::endl;
     */
 
 
-    // 3.定义计数器并开始计时
-
-    //Normalization();
-
-    //SearchBest(/*vectorA_normal*/ vectorA, SEEDNUM, FEATSIZE, pDB, FACENUM, all_res);
-    SearchBest(vectorA_normal, SEEDNUM, FEATSIZE, pDB, FACENUM, all_res);
+    //SearchBest(/*vectorA_norm*/ vectorA, SEEDNUM, FEATSIZE, pDB, FACENUM, all_res);
+    SearchBest(vectorA_norm, SEEDNUM, FEATSIZE, pDB, FACENUM, all_res);
 
 
-    // 4.打印结果
     t.Stop().WriteDurationLog();
     ResultWriter().Write(all_res);
 
     std::cout << "normalization " << t_norm << std::endl;
     std::cout << t << std::endl;
-    // 5.释放分配的内存，防止内存泄露
-    // memalign分配的内存也可以用free释放
+
     free(pDB);
+    free(vectorB);
 
     for(auto && p : all_res) {
         delete(p);

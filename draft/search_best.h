@@ -14,9 +14,6 @@
 #include "cosine_similarity.h"
 #include "result_writer.h"
 
-// Step 1, g++ main.cpp search_best.cpp cosine_similarity.cpp -std=c++11
-// Step 2, g++ main.cpp search_best.cpp cosine_similarity.cpp -std=c++11 -O3
-// Step 3, g++ main.cpp search_best.cpp cosine_similarity.cpp -std=c++11 -O3 -Ofast -ffast-math
 template <typename RE_T, typename T>
 void SearchBest(const T* __restrict__ const pVecA,  // 待搜索的单个特征向量首地址
         const size_t seed_num,
@@ -34,9 +31,7 @@ void SearchBest(const T* __restrict__ const pVecA,  // 待搜索的单个特征�
     //MetaDataType best_similarity = 0;
     //unsigned int best_similarity = 0;
 #if 1
-    // Step 5, 加上OpenMP
-    //GCC很聪明，OpenMP默认线程数就是多核处理器的核心数量，不必显示指定
-    //OpenMP起线程，收回线程也是有开销的，所以要合理安排每个线程的任务量大小，不宜放入内层for循环（任务量太小划不来）
+    // OpenMP
 #pragma omp parallel for num_threads(8)
 //#pragma omp parallel for
     for (auto i = 0; i < seed_num; ++i) {
@@ -75,7 +70,7 @@ void SearchBest(const T* __restrict__ const pVecA,  // 待搜索的单个特征�
 
 #endif
 #if 0
-    // Step 12，使用OpenBLAS
+    // 使用OpenBLAS
     T simAll[facenum] = {0.0f};
     cblas_sgemv(CblasRowMajor, CblasNoTrans, facenum, featsize, 1, pVecDB, featsize, pVecA, 1, 0, simAll, 1);
     // 寻找simAll里面最大的，它的序号就是要找的id
