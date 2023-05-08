@@ -13,6 +13,8 @@
 
 #define ALGIN               (32) // 使用SIMD需要内存对齐，128bit的指令需要16位对齐，256bit的指令需要32位对齐
 #define FACENUM      (1000*1000) // the total of dict vectors
+//#define FACENUM      (20000) // the total of dict vectors
+//#define SEEDNUM      (1)
 #define SEEDNUM      (1000)
 #define FEATSIZE     (256)
 
@@ -23,10 +25,7 @@ typedef float DType;
 const std::string kSeedFilePath = "seed_vec.csv";
 const std::string kDictFilePath = "dict_vec.csv";
 
-constexpr float kConvertToShortDelta = 1.0f/(65535*2.0f);
-
-float calcL(const DType * const pVec, const int len)
-{
+float calcL(const float* const pVec, const int len) {
     float l = 0.0f;
 
     for(int i = 0; i < len; i++) {
@@ -36,28 +35,38 @@ float calcL(const DType * const pVec, const int len)
     return sqrt(l) + FLT_MIN;
 }
 
-void NormalizeVec(float *v1, unsigned short *v2, float* v3, unsigned short *v4) {
-#pragma omp parallel for num_threads(THREAD_NUM)
-    for(int i = 0; i < FACENUM; ++i) {
-        float norm = calcL(v3+i*FEATSIZE, FEATSIZE);
-        float norm_seed;
-        if (i < SEEDNUM) {
-            norm_seed = calcL(v1+i*FEATSIZE, FEATSIZE);
-        }
-        for(auto j = 0; j < FEATSIZE; ++j) {
-            v3[i*FEATSIZE+j] /= norm;
-            v4[i*FEATSIZE+j] = static_cast<unsigned short>(
-                std::numeric_limits<unsigned short>::max() *
-                (v3[i*FEATSIZE+j] + kConvertToShortDelta));
+void NormalizeVec(float *v1, unsigned short *v2, float* v3, unsigned short *v4,
+        unsigned short* seed_index[],
+        unsigned short* dict_index[]) {
 
-            if (i < SEEDNUM) {
-                v1[i*FEATSIZE+j] /= norm_seed;
-                v2[i*FEATSIZE+j] = static_cast<unsigned short>(
+#pragma omp parallel for num_threads(THREAD_NUM)
+    for(int i = 0; i < kDictVecNum; ++i) {
+        size_t index = i*kMatrixDimension;
+
+        dict_index[i] = v4+index;
+        float norm = calcL(v3+index, kMatrixDimension);
+        float norm_seed;
+        if (i < kSeedVecNum) {
+            seed_index[i] = v2+index;
+            norm_seed = calcL(v1+index, kMatrixDimension);
+        }
+
+        for(auto j = 0; j < kMatrixDimension; ++j) {
+            size_t offset = index + j;
+            v3[offset] /= norm;
+            dict_index[i][j] = static_cast<unsigned short>(
                     std::numeric_limits<unsigned short>::max() *
-                    (v1[i*FEATSIZE+j] + kConvertToShortDelta));
+                    (v3[offset] + kConvertToShortDelta));
+
+            if (i < kSeedVecNum) {
+                v1[offset] /= norm_seed;
+                seed_index[i][j] = static_cast<unsigned short>(
+                        std::numeric_limits<unsigned short>::max() *
+                        (v1[offset] + kConvertToShortDelta));
             }
         }
     }
+
 }
 
 void NormalizeVec2(float *v1, unsigned short *v2, float* v3, unsigned short *v4) {
@@ -147,11 +156,21 @@ int main(int argc, char* argv[])
     // 模归一化
     Timer t(std::stoi(argv[1]));
     Timer t_norm;
+    //A a(vectorA, vectorB);
+    unsigned short *seed_index[kSeedVecNum];
+    //unsigned short* (*dict_index) [kDictVecNum];
+    unsigned short** dict_index = static_cast<unsigned short**>(malloc(sizeof(unsigned short*)*kDictVecNum));
+
     t_norm.Start();
     t.Start();
-    NormalizeVec(vectorA, vectorA_norm, vectorB, pDB);
-    //NormalizeVec2(vectorA, vectorA_norm, vectorB, pDB);
+    //a.NormalizeVec();
+    NormalizeVec(vectorA, vectorA_norm, vectorB, pDB, seed_index, dict_index);
     t_norm.Stop();
+
+    /*
+    for (auto && i : vectorA_norm) {
+        std::cout << i << std::endl;
+    }*/
 
     /*
     std::ostream_iterator<unsigned short> cout_iter(std::cout, ",");
@@ -161,7 +180,8 @@ int main(int argc, char* argv[])
     std::cout << std::endl;
     */
 
-    SearchBest(vectorA_norm, SEEDNUM, FEATSIZE, pDB, FACENUM, all_res);
+    //a.SearchBest();
+    SearchBest(vectorA_norm, SEEDNUM, FEATSIZE, pDB, FACENUM, seed_index, dict_index, all_res);
 
     t.Stop().WriteDurationLog();
     ResultWriter().Write(all_res);
@@ -175,6 +195,8 @@ int main(int argc, char* argv[])
     for(auto && p : all_res) {
         delete(p);
     }
+
+    free(dict_index);
 
     return 0;
 }
