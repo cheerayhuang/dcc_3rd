@@ -54,13 +54,19 @@ public:
 
     void Run() {
         Timer t_norm;
+        Timer t_calc;
         t_norm.Start();
         timer_->Start();
         _DataPreHandler();
-        std::cout << t_norm.Stop() << std::endl;
+        t_norm.Stop();
 
+        t_calc.Start();
         _CalcSimilarity();
         timer_->Stop().WriteDurationLog();
+        t_calc.Stop();
+
+        std::cout << "prehandle: " << t_norm << std::endl;
+        std::cout << "calc: " << t_calc << std::endl;
 
         ResultWriter().Write(all_res_);
     }
