@@ -12,6 +12,16 @@
 #include "timer.h"
 #include "data_reader.h"
 
+unsigned Dot(const unsigned* v1, const unsigned* v2) {
+    unsigned res{0};
+    for (auto i = 0; i < 128; ++i) {
+        //res += (v1[i] >> 16) * (v2[i]>>16) + (v1[i]&0xffff) *(v2[i]&0xffff);
+        res += v1[i] * v2[i];
+    }
+
+    return res;
+}
+
 unsigned Dot(const unsigned short *v1,
         const unsigned short *v2) {
 
@@ -87,9 +97,46 @@ int main() {
 
     std::vector<float> result(1000, 0.0f);
 
+    // Test: int multiply
+    enum {
+        kMatrixDimension = 256,
+        kDictVecNum = 1000*1000,
+        kSeedVecNum = 1000,
+        kAlign16Bit = 16,
+        kAlign32Bit = 32
+    };
+    unsigned short *dict_data_int = static_cast<unsigned short*>(
+            memalign(kAlign32Bit, sizeof(unsigned short)*kMatrixDimension*kDictVecNum));
+
+    unsigned short *seed_data_int = static_cast<unsigned short*>(
+            memalign(kAlign32Bit, sizeof(unsigned short)*kMatrixDimension*kSeedVecNum));
+
+    unsigned result_int[1000]{0};
+
     t.Start();
+#pragma omp parallel for num_threads(8)
+    for(auto i = 0; i < 1000*1000*256; ++i) {
+        if (i < 1000*256) {
+            seed_data_int[i] = static_cast<unsigned short>(seed_data[i]*65535);
+        }
+        dict_data_int[i] = static_cast<unsigned short>(dict_data[i]*65535);
+    }
+
+#pragma omp parallel for num_threads(8)
+    for (auto k = 0; k < 1000; ++k) {
+        for(auto i = 0; i < 1000000; ++i) {
+            //result_int[k] = Dot(reinterpret_cast<unsigned*>(seed_data_int+(k<<8)), reinterpret_cast<unsigned*>(dict_data_int+(i<<8)));
+            result_int[k] = Dot(seed_data_int+(k<<8), dict_data_int+(i<<8));
+        }
+    }
+
+    std::cout << "int dot elapsed: " << t.Stop() << std::endl;
+
+    std::cout << result_int[rand_distri_int(rand_e)] << std::endl;
+
 
 // Test: normal dot
+    t.Start();
 #pragma omp parallel for num_threads(8)
     for (auto k = 0; k < 1000; ++k) {
         size_t index_seed = (k<<8);
@@ -133,42 +180,6 @@ int main() {
     std::cout << "blas sgemv: " << t.Stop() << std::endl;
 
     std::cout << v6[rand_distri_int(rand_e)] << std::endl;
-
-// Test: int multiply
-    enum {
-        kMatrixDimension = 256,
-        kDictVecNum = 1000*1000,
-        kSeedVecNum = 1000,
-        kAlign16Bit = 16,
-        kAlign32Bit = 32
-    };
-    unsigned short *dict_data_int = static_cast<unsigned short*>(
-            memalign(kAlign32Bit, sizeof(unsigned short)*kMatrixDimension*kDictVecNum));
-
-    unsigned short *seed_data_int = static_cast<unsigned short*>(
-            memalign(kAlign32Bit, sizeof(unsigned short)*kMatrixDimension*kSeedVecNum));
-
-    unsigned result_int[1000]{0};
-
-    t.Start();
-#pragma omp parallel for num_threads(8)
-    for(auto i = 0; i < 1000*1000*256; ++i) {
-        if (i < 1000*256) {
-            seed_data_int[i] = static_cast<unsigned short>(seed_data[i]*65535);
-        }
-        dict_data_int[i] = static_cast<unsigned short>(dict_data[i]*65535);
-    }
-
-#pragma omp parallel for num_threads(8)
-    for (auto k = 0; k < 1000; ++k) {
-        for(auto i = 0; i < 1000000; ++i) {
-            result_int[k] = Dot(seed_data_int+(k<<8), dict_data_int+(i<<8));
-        }
-    }
-
-    std::cout << "int dot elapsed: " << t.Stop() << std::endl;
-
-    std::cout << result_int[rand_distri_int(rand_e)] << std::endl;
 
     return 0;
 }
