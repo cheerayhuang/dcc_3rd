@@ -167,7 +167,7 @@ private:
             if (sum_vec > max_dict_sum) {
                 max_dict_sum = sum_vec;
             }
-            if (max_dict_sum*0.95f < sum_vec) {
+            if (max_dict_sum*0.945f < sum_vec) {
                 calc_dict_indexes_[slot].push_back(dict_data_int_+index);
                 calc_dict_indexes_size_[slot]++;
             }
@@ -200,11 +200,11 @@ private:
         return std::sqrt(l) + std::numeric_limits<float>::min();
     }
 
-    inline unsigned _CalcCosSim(unsigned short* v1, unsigned short* v2) {
+    inline unsigned _CalcCosSim(unsigned short* vec1, unsigned short* vec2) {
         unsigned res{0};
 
         for (auto i =0; i < kMatrixDimension; ++i){
-            res += v1[i] * v2[i];
+            res += vec1[i] * vec2[i];
         }
 
         return res;
