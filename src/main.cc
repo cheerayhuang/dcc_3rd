@@ -9,16 +9,11 @@ int main(int argc, char* argv[]) {
     DataReader reader;
     reader.Read();
 
-    auto seed_data = reader.GetSeedData();
-    auto dict_data = reader.GetDictData();
-
-    /*
-    std::cout << *(seed_data+236) << "," << *(seed_data+999*256+15) << std::endl;
-    std::cout << *(dict_data+923666) << "," << *(dict_data+999999*256+15) << std::endl;
-    */
-
+    auto seed_data = reader.MoveSeedData();
+    auto dict_data = reader.MoveDictData();
 
     Calc calc(seed_data, dict_data, std::stoi(argv[1]));
+
     calc.Run();
 
     std::cout << calc.GetRunningTime() << std::endl;
