@@ -2,6 +2,7 @@
 
 #include <string>
 #include <fstream>
+#include <limits>
 #include <memory>
 
 #include <malloc.h>
@@ -37,8 +38,6 @@ public:
     }
 
     ~DataReader() {
-        free(dict_data_);
-        free(seed_data_);
         fin_.close();
     }
 
@@ -50,12 +49,18 @@ public:
         std::swap(fin_, other.fin_);
     }
 
-    float* GetSeedData() const {
-        return seed_data_;
+    float* MoveSeedData() {
+        auto res = seed_data_;
+        seed_data_ = nullptr;
+
+        return res;
     }
 
-    float* GetDictData() const {
-        return dict_data_;
+    float* MoveDictData() {
+        auto res = dict_data_;
+        dict_data_ = nullptr;
+
+        return res;
     }
 
     void Read() {
@@ -67,9 +72,11 @@ private:
     void _ReadDictFile() {
         fin_.open(dict_file_);
         dict_data_ = static_cast<float*>(
-            memalign(kAlign32Bit, sizeof(float)*kMatrixDimension*kDictVecNum));
+            memalign(kAlign16Bit, sizeof(float)*kMatrixDimension*kDictVecNum));
+
         char delimiter;
         for (auto i = 0; i < kDictVecNum; ++i) {
+            fin_.ignore(kStreamMaxSize, ',');
             for (auto j = 0; j < kMatrixDimension; ++j) {
                 fin_ >> dict_data_[i*kMatrixDimension+j];
                 if (j < kMatrixDimension-1) {
@@ -85,9 +92,11 @@ private:
     void _ReadSeedFile() {
         fin_.open(seed_file_);
         seed_data_ = static_cast<float*>(
-            memalign(kAlign32Bit, sizeof(float)*kMatrixDimension*kSeedVecNum));
+            memalign(kAlign16Bit, sizeof(float)*kMatrixDimension*kSeedVecNum));
+
         char delimiter;
         for (auto i = 0; i < kSeedVecNum; ++i) {
+            fin_.ignore(kStreamMaxSize, ',');
             for (auto j = 0; j < kMatrixDimension; ++j) {
                 fin_ >> seed_data_[i*kMatrixDimension+j];
                 if (j < kMatrixDimension-1) {
@@ -108,6 +117,10 @@ private:
     std::string dict_file_, seed_file_;
 
     std::shared_ptr<spdlog::logger> logger_;
+
+    enum {
+        kStreamMaxSize = std::numeric_limits<std::streamsize>::max()
+    };
 
     /*
     enum {
