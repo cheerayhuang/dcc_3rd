@@ -5,3 +5,5 @@
 *.bk*
 *.bak
 *.csv.*
+
+deprecated/
