@@ -43,8 +43,8 @@ class Result {
     using ResList = std::vector<T>;
     enum {
         kMaxNumOfResultData = TOP_K,
-        kResListReserveCap = 10100,
-        kResListNeedSortingCap = 10000
+        kResListReserveCap = 3 * 10100,
+        kResListNeedSortingCap = 3 * 10000
     };
 
 private:
