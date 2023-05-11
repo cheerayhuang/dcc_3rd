@@ -1,15 +1,15 @@
 #pragma once
 
-#define THREAD_NUM (8)
+#define THREAD_NUM (4)
 
 #include <limits>
 
 enum {
         kMatrixDimension = 256,
         kDictVecNum = 1000*1000,
-        //kDictVecNum = 1000,
+        //kDictVecNum = 100000,
         kSeedVecNum = 1000,
-        //kSeedVecNum = 1,
+        //kSeedVecNum = 80,
         kAlign32Bit = 32,
         kAlign16Bit = 16,
 
