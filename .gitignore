@@ -7,3 +7,5 @@
 *.csv.*
 
 deprecated/
+build/
+calc_cosim
