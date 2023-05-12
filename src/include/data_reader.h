@@ -1,3 +1,9 @@
+/*
+ * 数据读入类 DataReader。
+ *
+ * 直接放弃 double 类型，采用 float 读入，放弃部分精度。
+ */
+
 #pragma once
 
 #include <string>
@@ -69,8 +75,25 @@ public:
     }
 
 private:
+    /*
+     * 下面两个函数分别读取 dict 的 csv 文件
+     * 和 seed 的 csv 文件。
+     *
+     * 直接申请的 float 类型的指针。
+     *
+     * 整个过程没有做数据预处理。
+     *
+     */
+
+
     void _ReadDictFile() {
         fin_.open(dict_file_);
+
+        /* 以 16bit 对齐的方式申请存储 float 内容的内存。
+         * 尽管 float 类型时32bit的。这样做的目的是后续这块内存还要作为
+         * unsigned short使用。
+         */
+
         dict_data_ = static_cast<float*>(
             memalign(kAlign16Bit, sizeof(float)*kMatrixDimension*kDictVecNum));
 

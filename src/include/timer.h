@@ -1,3 +1,9 @@
+/*
+ * 类Timer。
+ *
+ * 利用 std::chrono 实现的计时器类。精度到纳秒。
+ */
+
 #pragma once
 
 #include <chrono>
