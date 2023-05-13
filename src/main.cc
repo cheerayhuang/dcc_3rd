@@ -1,14 +1,13 @@
+#include "args.h"
 #include "calc.h"
 #include "data_reader.h"
 
 
-
 int main(int argc, char* argv[]) {
-    if (argc == 1) {
-        argv[1] = new char[2]{'1', '\0'};
-    }
+    gflags::SetUsageMessage("Vector cosine similarity calculation");
+    gflags::ParseCommandLineFlags(&argc, &argv, true);
 
-    DataReader reader;
+    DataReader reader(FLAGS_dict, FLAGS_seed);
     reader.Read();
 
     /*
@@ -24,7 +23,7 @@ int main(int argc, char* argv[]) {
     /*
      * 封装了一个简单的计算过程对象。传递数据进去，进行计算。
      */
-    Calc calc(seed_data, dict_data, std::stoi(argv[1]));
+    Calc calc(seed_data, dict_data, FLAGS_round);
     calc.Run();
 
     std::cout << calc.GetRunningTime() << std::endl;
