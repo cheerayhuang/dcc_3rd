@@ -72,6 +72,9 @@ public:
 
         // 存放真正需要计算的 dict 向量的 index ， 按照线程分成了不同的 slot 存放。
         calc_dict_indexes_size_.assign(THREAD_NUM, 0);
+
+        logger_ = spdlog::stdout_color_mt("Calc");
+        logger_->set_level(spdlog::level::info);
     }
 
     Calc(Calc&&) = delete;
@@ -118,14 +121,11 @@ public:
 
         auto sum = 0;
         for (auto i = 0; i < THREAD_NUM; ++i) {
-            std::cout << "slot size: " << calc_dict_indexes_size_[i] << std::endl;
+            //std::cout << "slot size: " << calc_dict_indexes_size_[i] << std::endl;
+            logger_->info("slot {} size: {}", i, calc_dict_indexes_size_[i]);
             sum += calc_dict_indexes_[i].size();
         }
-        std::cout << sum << std::endl;
-        std::cout << dict_index_points_num_ << std::endl;
-
-        //std::cout << "lay the data flat " << t << std::endl;
-
+        logger_->info("the actual num of dict vec calculated: {}", sum);
         ResultWriter().Write(all_res_, dict_index_points_, dict_data_int_);
     }
 
@@ -324,4 +324,6 @@ private:
     Timer* timer_;
 
     AllResults<ResultData<unsigned>> all_res_{kSeedVecNum, nullptr};
+
+    std::shared_ptr<spdlog::logger> logger_;
 };
