@@ -4,3 +4,8 @@
 *.log
 *.bk*
 *.bak
+*.csv.*
+
+deprecated/
+build/
+calc_cosim

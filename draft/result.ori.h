@@ -36,8 +36,8 @@ using namespace std::rel_ops;
 template<typename T, unsigned TOP_K>
 class Result {
 
-    //using ResList = std::list<T>;
-    using ResList = std::vector<T>;
+    using ResList = std::list<T>;
+    //using ResList = std::vector<T>;
     enum {
         kMaxNumOfResultData = TOP_K
     };
@@ -45,15 +45,15 @@ class Result {
 private:
     size_t len_ = 0;
     ResList res_list_;
-    //typename ResList::iterator min_iter_ = res_list_.begin();
-    typename T::DataType min_val_ = 0;
+    typename ResList::iterator min_iter_ = res_list_.begin();
+    //typename T::DataType min_val_ = 0;
 
     //std::mutex insert_data_mutex_;
 
 public:
 
     Result() {
-        res_list_.reserve(120000);
+        //res_list_.reserve(120000);
     }
 
     const ResList& GetResult() const {
@@ -66,52 +66,23 @@ public:
 
     template<typename CMP_TYPE=std::greater<T>>
     void InsertResData(T&& data, CMP_TYPE cmp_op=CMP_TYPE()) {
-        /*
+
         if (len_ == kMaxNumOfResultData && cmp_op(*min_iter_, data)){
             return ;
-        }*/
-
-        if (min_val_ > data.data) {
-            return;
         }
 
-        res_list_.push_back(std::move(data));
-        len_++;
+        res_list_.push_front(std::move(data));
 
-        /*
+
         if (len_ == kMaxNumOfResultData) {
             res_list_.erase(min_iter_);
         } else {
             len_++;
-        }*/
-
-        //std::cout << len_ << std::endl;
-
-        if (len_ >= 100000) {
-            std::nth_element(res_list_.begin(),
-                res_list_.begin()+kMaxNumOfResultData-1,
-                res_list_.end(),
-                cmp_op);
-            /*
-            for (auto&& i : res_list_) {
-                std::cout << i.data << ", ";
-            }*/
-            //std::cout << std::endl;
-
-            res_list_.erase(res_list_.begin()+kMaxNumOfResultData, res_list_.end());
-            auto min_pos = std::min_element(res_list_.begin(), res_list_.end());
-            min_val_ = min_pos->data;
-            len_ = kMaxNumOfResultData;
         }
-    }
 
-    void SortRes() {
-        //std::cout << res_list_.size() << std::endl;
-
-        std::nth_element(res_list_.begin(),
-            res_list_.begin()+kMaxNumOfResultData-1,
-            res_list_.end(),
-            std::greater<T>{});
+        if (len_ > 1) {
+            min_iter_ = std::min_element(res_list_.begin(), res_list_.end());
+        }
     }
 
     using MetaDataType = typename T::DataType;

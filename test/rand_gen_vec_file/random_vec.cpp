@@ -1,6 +1,6 @@
 #include <chrono>
 #include <fstream>
-#include <random> 
+#include <random>
 #include <string>
 
 #include "args.h"
@@ -15,11 +15,11 @@ enum class VecType {
 class TestGenerator {
 
 private:
-    
+
     std::mt19937_64 rand_e_;
     std::uniform_real_distribution<double> rand_distri_{0.0, 1.0};
     std::string seed_file_, dict_file_;
-    
+
     const unsigned int kDimetion = FLAGS_dimetion;
     const unsigned int kSeedVecTotal = FLAGS_seed_total;
     const unsigned int kDictVecTotal = FLAGS_dict_total;
@@ -27,7 +27,7 @@ private:
 public:
 
     TestGenerator(std::string seed_file=FLAGS_seed_file, std::string dict_file=FLAGS_dict_file):
-        seed_file_(std::move(seed_file)),  
+        seed_file_(std::move(seed_file)),
         dict_file_(std::move(dict_file)) {
 
         rand_e_.seed(Timer::NowAsNanoseconds());
@@ -66,14 +66,16 @@ public:
 
 
 int main(int argc, char **argv) {
-    
+
     gflags::SetVersionString("0.1.0");
     gflags::SetUsageMessage("Generate vectors stored in files for testing.");
     gflags::ParseCommandLineFlags(&argc, &argv, true);
 
 
+    /*
     VecType v_type = VecType::kSeedVector;
     std::cout << static_cast<int>(v_type) << std::endl;
+    */
 
     TestGenerator t;
     //t.GenVectors(v_type);

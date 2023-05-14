@@ -6,13 +6,13 @@
 //#include <immintrin.h>
 
 template <typename RE_T,  typename T>
-RE_T CosineSimilarity(const T* __restrict__ const vectorA, // 第一个特征向量的首地址
-                    const T* __restrict__ const vectorB, // 第二个特征向量的首地址
+RE_T CosineSimilarity(const T* __restrict__ const vectorA,
+                    const T* __restrict__ const vectorB,
                     const int len){  // 特征向量长度(维数)
 
     RE_T mult_add = 0;
     //unsigned int mult_add = 0;
-    // Step 10，有了模归一化后，不必计算a_norm2和b_norm2
+    // 有了模归一化后，不必计算a_norm2和b_norm2
 //    T a_norm2  = 0.0f;
 //    T b_norm2  = 0.0f;
 
@@ -37,7 +37,7 @@ RE_T CosineSimilarity(const T* __restrict__ const vectorA, // 第一个特征向
 
 #if 0
 
-// Step 7, SIMD
+// SIMD instructions
 float inline reduceM128(const __m128 r)
 {
     // 128位操作只需要16字节对齐
@@ -58,7 +58,7 @@ float inline reduceM256(const __m256 r)
     return reduceM128(sum);
 }
 
-// Step 8, Fast InvSqrt from QUAKE-III
+// Fast InvSqrt from QUAKE-III
 float InvSqrt(float x){
     const float xhalf = 0.5f*x;
     int i = *(int*)&x;
@@ -82,7 +82,6 @@ Cosine_similarity_avx(const float* const vectorA, const float* const vectorB, co
 
     __m256 mult_add_m256 = _mm256_setzero_ps();
     __m256 a_norm_m256   = _mm256_setzero_ps();
-    // Step 9，考虑b_norm2预计算
     __m256 b_norm_m256   = _mm256_setzero_ps();
     for(int i = 0; i < step; i++) {
         mult_add_m256 = _mm256_fmadd_ps(one[i], two[i], mult_add_m256); // a * b + c
