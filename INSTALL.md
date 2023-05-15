@@ -11,7 +11,7 @@ $> bash ./build.sh
 
 ```
 $> cd ./src
-$> ./a.out -seed './path/seed_vld.csv'a -dict './path/dict_vld.csv' -round 5
+$> ./a.out -seed './path/seed_vld.csv' -dict './path/dict_vld.csv' -round 5
 ```
 
 数据文件的默认值是 `seed_vec.csv` 和 `dict_vec.csv`。如果这两个文件和编译生成的文件 `a.out` 在同一个目录下，可以直接运行：
