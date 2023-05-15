@@ -126,7 +126,7 @@ public:
             sum += calc_dict_indexes_[i].size();
         }
         logger_->info("the actual num of dict vec calculated: {}", sum);
-        ResultWriter().Write(all_res_, dict_index_points_, dict_data_int_);
+        ResultWriter<kTopK>().Write(all_res_, dict_index_points_, dict_data_int_);
     }
 
     Timer& GetRunningTime() {

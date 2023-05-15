@@ -14,8 +14,10 @@ enum {
         //kDictVecNum = 100000,
         kSeedVecNum = 1000,       // 种子向量个数
         //kSeedVecNum = 80,
-        kAlign32Bit = 32,         // 申请内存时按32bit对齐。
+        kAlign32Bit = 32,         // 申请内存时按32bit对齐
         kAlign16Bit = 16,         // 申请内存时按16bit对齐
+
+        kTopK       = 10,         // 结果求前10余弦相似度
 
         kInt16BitMax = std::numeric_limits<unsigned short>::max()
 };

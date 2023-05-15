@@ -9,11 +9,12 @@
 #include <fstream>
 #include <string>
 
+#include "constants.h"
 #include "result.ori.h"
 //#include "result.h"
 //#include "result_heap.h"
 
-template<unsigned TOP_K=10>
+template<unsigned TOP_K=kTopK>
 class ResultWriter {
 
 
@@ -36,10 +37,10 @@ public:
         fout_ << kHeaderRow << std::endl;
     }
 
-    template<typename T>
-    void Write(const AllResults<T>& all_res,
-        unsigned short **dict_index_points,
-        unsigned short *dict_data_int) {
+    template<typename T,  typename RES_T>
+    void Write(const AllResults<RES_T>& all_res,
+        T **dict_index_points,
+        T *dict_data_int) {
 
         WriterHeader();
 
