@@ -59,8 +59,8 @@ public:
             std::for_each(res_list.begin(), res_list.end(),
                     [i, this, &rank, dict_index_points, dict_data_int](auto&& data) {
                         auto index = (static_cast<unsigned>(dict_index_points[data.index]-dict_data_int) >> 8);
-                        fout_ << i << "," << index
-                            << "," << data.data << "," << rank << "\n";
+                        fout_ << i << "," << index << "," << rank << "\n";
+                            //<< "," << data.data << "," << rank << "\n";
                         rank++;
                     }
             );
