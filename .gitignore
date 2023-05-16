@@ -1,6 +1,7 @@
 *.out
 *.csv
 *.tar.gz
+*.zip
 *.log
 *.bk*
 *.bak

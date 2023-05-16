@@ -119,6 +119,7 @@ public:
 
         timer_->Stop().WriteDurationLog();
 
+        /*
         auto sum = 0;
         for (auto i = 0; i < THREAD_NUM; ++i) {
             //std::cout << "slot size: " << calc_dict_indexes_size_[i] << std::endl;
@@ -126,6 +127,7 @@ public:
             sum += calc_dict_indexes_[i].size();
         }
         logger_->info("the actual num of dict vec calculated: {}", sum);
+        */
         ResultWriter<kTopK>().Write(all_res_, dict_index_points_, dict_data_int_);
     }
 
